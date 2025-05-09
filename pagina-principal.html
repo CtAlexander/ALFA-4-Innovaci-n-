@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla Principal - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
+      background-size: 400% 400%;
+      animation: fondoElegante 30s ease infinite;
+      color: white;
+      overflow: hidden;
+    }
+
+    @keyframes fondoElegante {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    header {
+      width: 100%;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .perfil-btn {
+      background: linear-gradient(135deg, #2c3e50, #6a89cc);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 18px;
+      margin-left: 10px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .perfil-btn:hover {
+      background: #4b6584;
+      transform: scale(1.05);
+    }
+
+    .contenido {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 70px);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+
+    .tarjetas-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tarjetas {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .tarjeta {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px 30px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .tarjeta:hover {
+      transform: scale(1.05);
+    }
+
+    .alfa-avatar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      text-align: center;
+      animation: flotar 4s ease-in-out infinite;
+      z-index: 999;
+    }
+
+    .alfa-bubble {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 18px;
+      border-radius: 20px;
+      color: white;
+      margin-bottom: 10px;
+      max-width: 260px;
+      font-size: 14px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    #avatarAnimacion {
+      width: 100px;
+      height: 100px;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+</head>
+<body>
+  <header>
+    <h2>Bienvenido a Alfa</h2>
+    <div>
+      <button class="perfil-btn" onclick="irAPerfil()">👤 Perfil</button>
+      <button class="perfil-btn" onclick="irAAvance()">📈 Avance</button>
+    </div>
+  </header>
+
+  <main class="contenido">
+    <h1 id="mensajeBienvenida">Bienvenido a tu espacio empresarial. ¿Qué deseas hacer hoy?</h1>
+    <div class="tarjetas-container">
+      <div class="tarjetas">
+        <div class="tarjeta" onclick="alert('Ir a Panel General')">📊 Panel General</div>
+        <div class="tarjeta" onclick="alert('Ir a Mi Empresa')">🏭 Mi Empresa</div>
+        <div class="tarjeta" onclick="alert('Ir a Conexiones')">🤝 Conexiones</div>
+        <div class="tarjeta" onclick="alert('Ir a Configuración')">⚙️ Configuración</div>
+        <div class="tarjeta" onclick="irAAlfa()">🚀 Empezá tu negocio</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble" id="mensajeAlfa">✨ Bienvenido emprendedor.</div>
+    <div id="avatarAnimacion"></div>
+  </div>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import lottie from "https://cdn.skypack.dev/lottie-web";
+
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1qb1Aw2I4U-3nn3Iazrsw_RxoE2ZxvUE",
+    authDomain: "ia-alfa.firebaseapp.com",
+    projectId: "ia-alfa",
+    storageBucket: "ia-alfa.firebasestorage.app",
+    messagingSenderId: "30859561655",
+    appId: "1:30859561655:web:714ab0eb70fd22d9f85b32",
+    measurementId: "G-5TG3F54YD7"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Animación Lottie para Alfa
+  lottie.loadAnimation({
+    container: document.getElementById("avatarAnimacion"),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: "Animation - 1746668881094 (1).json"
+  });
+
+  // Función para hablar
+  function hablar(texto) {
+    const voz = new SpeechSynthesisUtterance();
+    voz.text = texto;
+    voz.lang = "es-MX";
+    voz.pitch = 1;
+    voz.rate = 1;
+    speechSynthesis.speak(voz);
+  }
+
+  // Al cargar la página
+  window.addEventListener("DOMContentLoaded", () => {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const uid = user.uid;
+          const docRef = doc(db, "usuarios", uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const nombre = docSnap.data().nombre || "emprendedor";
+            const mensaje = `Bienvenido emprendedor ${nombre}.`;
+            document.getElementById("mensajeAlfa").textContent = `✨ ${mensaje}`;
+            hablar(mensaje);
+          } else {
+            console.warn("⚠️ No se encontró el usuario en Firestore.");
+          }
+        } catch (error) {
+          console.error("❌ Error al obtener los datos del usuario:", error);
+        }
+      } else {
+        console.warn("⚠️ Usuario no autenticado.");
+        window.location.href = "index.html"; // Redirigir si no hay sesión
+      }
+    });
+  });
+
+  // Funciones de navegación
+  window.irAPerfil = () => {
+    alert("Ir a perfil.html");
+  };
+
+  window.irAAlfa = () => {
+    alert("Ir a chat-con-alfa.html");
+  };
+
+  window.irAAvance = () => {
+    alert("Ir a avance.html");
+  };
+</script>
+
+  </script>
+</body>
+</html>

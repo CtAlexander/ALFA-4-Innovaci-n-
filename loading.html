@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cargando - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      background: #0e162e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+    }
+
+    #loader {
+      width: 250px;
+      height: 250px;
+    }
+
+    .alfa-avatar {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      text-align: center;
+      animation: flotar 4s ease-in-out infinite;
+    }
+
+    .alfa-bubble {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 18px;
+      border-radius: 20px;
+      color: white;
+      margin-bottom: 10px;
+      max-width: 240px;
+      font-size: 14px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    #avatarAnimacion {
+      width: 100px;
+      height: 100px;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+</head>
+<body>
+  <div id="loader"></div>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble">🔄 Un momento... estamos preparando tu espacio de trabajo.</div>
+    <div id="avatarAnimacion"></div>
+  </div>
+
+  <script>
+    // Animación de carga
+    lottie.loadAnimation({
+      container: document.getElementById('loader'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'Animation - 1746755395319.json'
+    });
+
+    // Animación del avatar de Alfa
+    lottie.loadAnimation({
+      container: document.getElementById("avatarAnimacion"),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: "Animation - 1746668881094 (1).json"
+    });
+
+    // Alfa habla
+    function hablar(texto) {
+      const voz = new SpeechSynthesisUtterance();
+      voz.text = texto;
+      voz.lang = "es-MX";
+      voz.pitch = 1;
+      voz.rate = 1;
+      speechSynthesis.speak(voz);
+    }
+
+    // Lanzar voz al cargar
+    window.addEventListener("DOMContentLoaded", () => {
+      hablar("Un momento... estamos preparando tu espacio de trabajo");
+    });
+
+    // Redirigir a la siguiente pantalla
+    setTimeout(() => {
+      window.location.href = "pagina-principal.html";
+    }, 5000);
+  </script>
+</body>
+</html>
