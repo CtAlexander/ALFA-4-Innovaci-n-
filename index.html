@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IA Alfa - Plataforma</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
+      background-size: 400% 400%;
+      animation: fondoElegante 30s ease infinite;
+      color: white;
+      overflow: hidden;
+    }
+
+    @keyframes fondoElegante {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .left, .right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 30px;
+    }
+
+    .left h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 38px;
+  margin-bottom: 20px;
+  text-align: center;
+  max-width: 600px;
+}
+
+    
+
+    .form-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      backdrop-filter: blur(12px);
+      width: 90%;
+      max-width: 400px;
+      color: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .form-box h2 {
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .form-box input, .form-box select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .form-box button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 25px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #2c3e50, #6a89cc);
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .form-box p {
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .form-box a {
+      color: #6a89cc;
+      cursor: pointer;
+    }
+
+    .animacion-container {
+      width: 320px;
+      height: 320px;
+    }
+
+    .alfa-avatar {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      text-align: center;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .alfa-bubble {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 18px;
+      border-radius: 20px;
+      color: white;
+      margin-bottom: 10px;
+      max-width: 260px;
+      font-size: 14px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    #avatarAnimacion {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h1>ALFA: Tu aliada para emprender, crecer y conectar con el mundo empresarial.</h1>
+      <div class="animacion-container" id="animacionLottie"></div>
+    </div>
+
+    <div class="right">
+      <div class="form-box" id="formulario">
+        <h2>Crear cuenta</h2>
+        <input type="text" id="nombre" placeholder="Tu Usuario" />
+        <input type="number" id="edad" placeholder="Edad" />
+        <input type="email" id="email" placeholder="Correo electrónico" />
+        <input type="password" id="password" placeholder="Contraseña" />
+        <select id="tipo">
+          <option value="">¿Eres emprendedor o empresario?</option>
+          <option value="emprendedor">Emprendedor</option>
+          <option value="empresario">Empresario</option>
+        </select>
+        <select id="busca">
+          <option value="">¿Qué estás buscando?</option>
+          <option>Empezar un negocio</option>
+          <option>Asistente empresarial</option>
+          <option>Buscar un inversionista</option>
+          <option>Buscar clientes</option>
+          <option>Buscar proveedores</option>
+          <option>Otros</option>
+        </select>
+        <button onclick="registrarUsuario()">Crear cuenta</button>
+        <p>¿Ya tienes cuenta? <a onclick="mostrarLogin()">Iniciar sesión</a></p>
+      </div>
+
+      <div class="alfa-avatar">
+        <div class="alfa-bubble" id="alfaMensaje">
+          📝 Vamos a crear tu cuenta. Es el primer paso hacia tu éxito.
+        </div>
+        <div id="avatarAnimacion"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import lottie from "https://cdn.skypack.dev/lottie-web";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA1qb1Aw2I4U-3nn3Iazrsw_RxoE2ZxvUE",
+  authDomain: "ia-alfa.firebaseapp.com",
+  projectId: "ia-alfa",
+  storageBucket: "ia-alfa.firebasestorage.app",
+  messagingSenderId: "30859561655",
+  appId: "1:30859561655:web:714ab0eb70fd22d9f85b32",
+  measurementId: "G-5TG3F54YD7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const animaciones = [
+  { path: 'Animacion2.json', titulo: '' },
+  { path: 'https://assets6.lottiefiles.com/packages/lf20_ydo1amjm.json', titulo: '' },
+  { path: 'https://assets10.lottiefiles.com/packages/lf20_kkflmtur.json', titulo: '' },
+  { path: 'https://assets2.lottiefiles.com/packages/lf20_fcfjwiyb.json', titulo: '' },
+  { path: 'Animation - 1746672971005.json', titulo: '' },
+  { path: 'Animation - 1746673057287.json', titulo: '' },
+  { path: 'Animation - 1746680480160.json', titulo: '' },
+];
+
+const animContainer = document.getElementById('animacionLottie');
+let current = 0;
+let animation = lottie.loadAnimation({
+  container: animContainer,
+  renderer: 'svg',
+  loop: true,
+  autoplay: true,
+  path: animaciones[current].path
+});
+
+setInterval(() => {
+  current = (current + 1) % animaciones.length;
+  animation.destroy();
+  animation = lottie.loadAnimation({
+    container: animContainer,
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: animaciones[current].path
+  });
+}, 12000);
+
+lottie.loadAnimation({
+  container: document.getElementById("avatarAnimacion"),
+  renderer: 'svg',
+  loop: true,
+  autoplay: true,
+  path: "Animation - 1746668881094 (1).json"
+});
+
+function hablar(texto) {
+  const mensaje = new SpeechSynthesisUtterance();
+  mensaje.text = texto;
+  mensaje.lang = "es-MX";
+  mensaje.pitch = 1;
+  mensaje.rate = 1;
+  speechSynthesis.speak(mensaje);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  hablar("Hola, soy Alfa. Estoy aquí para ayudarte a crear o hacer crecer tu empresa.");
+});
+
+window.mostrarLogin = () => {
+  document.getElementById('formulario').innerHTML = `
+    <h2>Iniciar sesión</h2>
+    <input type="email" id="email" placeholder="Correo Electrónico" />
+    <input type="password" id="password" placeholder="Contraseña" />
+    <button onclick="iniciarSesion()">Iniciar sesión</button>
+    <p>¿No tienes cuenta? <a onclick='mostrarRegistro()'>Crear cuenta</a></p>
+  `;
+  document.getElementById('alfaMensaje').textContent = "🔐 Ingresa tus datos para continuar tu camino empresarial.";
+  hablar("Ingresa tus datos para continuar tu camino empresarial.");
+};
+
+window.mostrarRegistro = () => {
+  document.getElementById('formulario').innerHTML = `
+    <h2>Crear cuenta</h2>
+    <input type="text" id="nombre" placeholder="Tu usuario" />
+    <input type="number" id="edad" placeholder="Edad" />
+    <input type="email" id="email" placeholder="Correo electrónico" />
+    <input type="password" id="password" placeholder="Contraseña" />
+    <select id="tipo">
+      <option value="">¿Eres emprendedor o empresario?</option>
+      <option value="emprendedor">Emprendedor</option>
+      <option value="empresario">Empresario</option>
+    </select>
+    <select id="busca">
+      <option value="">¿Qué estás buscando?</option>
+      <option>Empezar un negocio</option>
+      <option>Asistente empresarial</option>
+      <option>Buscar un inversionista</option>
+      <option>Buscar clientes</option>
+      <option>Buscar proveedores</option>
+      <option>Otros</option>
+    </select>
+    <button onclick="registrarUsuario()">Crear cuenta</button>
+    <p>¿Ya tienes cuenta? <a onclick='mostrarLogin()'>Iniciar sesión</a></p>
+  `;
+  document.getElementById('alfaMensaje').textContent = "📝 Vamos a crear tu cuenta. Es el primer paso hacia tu éxito.";
+  hablar("Vamos a crear tu cuenta. Es el primer paso hacia tu éxito.");
+};
+
+window.registrarUsuario = () => {
+  const nombre = document.getElementById("nombre").value.trim();
+  const edad = document.getElementById("edad").value.trim();
+  const tipo = document.getElementById("tipo").value.trim();
+  const busca = document.getElementById("busca").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password || !nombre) {
+    alert("⚠️ Completa todos los campos requeridos.");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(async (userCredential) => {
+      const uid = userCredential.user.uid;
+
+      // Guardar en localStorage
+      localStorage.setItem("nombre", nombre);
+      localStorage.setItem("edad", edad);
+      localStorage.setItem("tipo", tipo);
+      localStorage.setItem("busca", busca);
+      localStorage.setItem("email", email);
+
+      // Guardar en Firestore
+      await setDoc(doc(db, "usuarios", uid), {
+        nombre: nombre,
+        edad: edad,
+        tipo: tipo,
+        busca: busca,
+        email: email
+      });
+
+      alert(`✅ Registro exitoso con el correo: ${email}`);
+      window.location.href = "loading.html";
+    })
+    .catch((error) => {
+      alert("❌ Error al registrar: " + error.message);
+    });
+};
+
+window.iniciarSesion = () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("⚠️ Ingresa correo y contraseña.");
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert(`✅ Bienvenido, sesión iniciada con: ${userCredential.user.email}`);
+      window.location.href = "loading.html";
+    })
+    .catch((error) => {
+      alert("❌ Error al iniciar sesión: " + error.message);
+    });
+};
+
+ 
+  </script>
+</body>
+</html>
+
