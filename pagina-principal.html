@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -131,6 +132,13 @@
       margin-bottom: 10px;
     }
 
+    .post img {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
     .alfa-avatar {
       position: fixed;
       bottom: 20px;
@@ -210,7 +218,7 @@
       apiKey: "AIzaSyA1qb1Aw2I4U-3nn3Iazrsw_RxoE2ZxvUE",
       authDomain: "ia-alfa.firebaseapp.com",
       projectId: "ia-alfa",
-      storageBucket: "ia-alfa.firebasestorage.app",
+      storageBucket: "ia-alfa.appspot.com",
       messagingSenderId: "30859561655",
       appId: "1:30859561655:web:714ab0eb70fd22d9f85b32",
       measurementId: "G-5TG3F54YD7"
@@ -265,8 +273,25 @@
               const div = document.createElement("div");
               div.className = "post";
               div.innerHTML = `<h4>${data.autor || "Usuario desconocido"}</h4><p>${data.contenido || ""}</p>`;
+              if (data.imagen) {
+                div.innerHTML += `<img src="${data.imagen}" alt="Publicación">`;
+              }
               feed.appendChild(div);
             });
+
+            const noticias = [
+              { titulo: "Wall Street sube tras datos de inflación", cuerpo: "Los principales índices cerraron al alza este jueves..." },
+              { titulo: "Bitcoin alcanza nuevo máximo trimestral", cuerpo: "La criptomoneda más popular del mundo supera los $30,000..." },
+              { titulo: "Tesla presenta resultados mixtos", cuerpo: "Las ganancias superaron expectativas, pero las ventas cayeron un 4%..." }
+            ];
+
+            noticias.forEach(noticia => {
+              const div = document.createElement("div");
+              div.className = "post";
+              div.innerHTML = `<h4>📰 ${noticia.titulo}</h4><p>${noticia.cuerpo}</p>`;
+              feed.appendChild(div);
+            });
+
           } catch (error) {
             console.error("❌ Error al cargar datos:", error);
           }
@@ -277,16 +302,15 @@
     });
 
     window.irAPerfil = () => window.location.href = "perfil.html";
-window.irAAvance = () => window.location.href = "avance.html";
-window.irAAlfa = () => window.location.href = "chat-con-alfa.html";
-window.irAPanelGeneral = () => window.location.href = "panel-general.html";
-window.irAMiEmpresa = () => window.location.href = "mi-empresa.html";
-window.irAConexiones = () => window.location.href = "conexiones.html";
-window.irAConfiguracion = () => window.location.href = "configuracion.html";
-window.irAChatUsuarios = () => window.location.href = "chat-usuarios.html";
-window.irABuscarNegocios = () => window.location.href = "buscar-negocios.html";
-window.irAMisMovimientos = () => window.location.href = "mis-movimientos.html";
-
+    window.irAAvance = () => window.location.href = "avance.html";
+    window.irAAlfa = () => window.location.href = "chat-con-alfa.html";
+    window.irAPanelGeneral = () => window.location.href = "panel-general.html";
+    window.irAMiEmpresa = () => window.location.href = "mi-empresa.html";
+    window.irAConexiones = () => window.location.href = "conexiones.html";
+    window.irAConfiguracion = () => window.location.href = "configuracion.html";
+    window.irAChatUsuarios = () => window.location.href = "chat-usuarios.html";
+    window.irABuscarNegocios = () => window.location.href = "buscar-negocios.html";
+    window.irAMisMovimientos = () => window.location.href = "mis-movimientos.html";
   </script>
 </body>
 </html>
