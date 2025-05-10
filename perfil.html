@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil - IA Alfa</title>
+  <link rel="stylesheet" href="perfil.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>ALFA</h2>
+    <button onclick="location.href='principal.html'">🏠 Inicio</button>
+    <button onclick="location.href='notificaciones.html'">🔔 Notificaciones</button>
+    <button onclick="location.href='principal.html'">➕ Crear</button>
+    <button onclick="location.href='perfil.html'">👤 Perfil</button>
+  </div>
+
+  <div class="main-content">
+    <div class="profile-header">
+      <div class="profile-left">
+        <label for="inputFoto">
+          <img id="fotoPerfil" src="https://via.placeholder.com/100" alt="Foto de perfil">
+        </label>
+        <input type="file" id="inputFoto" accept="image/*">
+        <div class="info">
+          <input id="nombreUsuario" placeholder="Nombre del usuario">
+          <input id="descripcionUsuario" placeholder="Descripción del perfil">
+        </div>
+      </div>
+    </div>
+
+    <form id="formPublicacion" class="form-publicacion">
+      <textarea id="contenidoPublicacion" rows="2" placeholder="Texto de la publicación..."></textarea>
+      
+      <!-- 🔁 Nuevo diseño profesional -->
+      <div class="file-upload">
+        <label for="imagenPublicacion">
+          📁 Selecciona una imagen para tu publicación
+          <span id="nombreArchivo">No se ha seleccionado ninguna imagen</span>
+        </label>
+        <input type="file" id="imagenPublicacion" accept="image/*" onchange="mostrarNombreArchivo(event)">
+      </div>
+
+      <button type="submit">Publicar</button>
+    </form>
+
+    <div class="posts" id="perfilPublicaciones"></div>
+  </div>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble" id="mensajeAlfa">✨</div>
+    <div id="avatarAnimacion"></div>
+  </div>
+
+  <!-- 🔧 Script adicional para mostrar nombre del archivo -->
+  <script>
+    function mostrarNombreArchivo(event) {
+      const archivo = event.target.files[0];
+      const nombre = archivo ? archivo.name : "No se ha seleccionado ninguna imagen";
+      document.getElementById("nombreArchivo").textContent = nombre;
+    }
+  </script>
+
+  <script type="module" src="perfil.js"></script>
+</body>
+</html>
