@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empezá tu negocio - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
+      background-size: 400% 400%;
+      animation: fondo 20s ease infinite;
+      color: white;
+      overflow: hidden;
+    }
+
+    @keyframes fondo {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .sidebar {
+      width: 220px;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .sidebar h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-align: left;
+      transition: background 0.3s;
+    }
+
+    .sidebar button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #lista-chats button {
+      font-size: 13px;
+      margin-top: 5px;
+      background-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 15px 30px;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 20px;
+      font-weight: bold;
+      backdrop-filter: blur(8px);
+    }
+
+    .chat-container {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      line-height: 1.5;
+      display: inline-block;
+    }
+
+    .message.alfa {
+      background: rgba(255, 255, 255, 0.08);
+      align-self: flex-start;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .message.user {
+      background: #2c82c9;
+      align-self: flex-end;
+      color: white;
+    }
+
+    .avatar-lottie {
+      width: 40px;
+      height: 40px;
+    }
+
+    .input-container {
+      display: flex;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+    }
+
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      margin-right: 10px;
+      font-size: 15px;
+    }
+
+    .input-container button {
+      background: #5bc0be;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .typing .animation {
+      width: 40px;
+      height: 40px;
+    }
+
+    #goToBottomBtn {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      display: none;
+      padding: 10px 14px;
+      border-radius: 20px;
+      background: #2c82c9;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .chat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.chat-item button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.chat-item span:hover {
+  color: #ff4d4d;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h1>Alfa</h1>
+    <button onclick="window.location.href='pagina-principal.html'">🏠 Inicio</button>
+    <button onclick="crearNuevoChat()">➕ Nuevo chat</button>
+    <button onclick="mostrarHistorialChats()">💬 Tus chats</button>
+    <div id="lista-chats"></div>
+  </div>
+
+  <div class="main">
+    <header>🚀 Empezá tu negocio con Alfa</header>
+    <div class="chat-container" id="chat">
+      <div class="message alfa">
+        <div class="avatar-lottie" id="avatarAlfa"></div>
+        <div>Hola, soy Alfa 🤖. ¿Qué giro tiene tu negocio o idea?</div>
+      </div>
+    </div>
+    <div class="input-container">
+      <input type="text" id="inputMensaje" placeholder="Escribe tu mensaje..." />
+      <button onclick="enviarMensaje()">Enviar</button>
+    </div>
+  </div>
+
+  <button id="goToBottomBtn" onclick="chat.scrollTop = chat.scrollHeight">⬇</button>
+
+  <script type="module" src="empeza-negocio.js"></script>
+</body>
+</html>
