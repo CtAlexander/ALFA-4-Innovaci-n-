@@ -1,4 +1,3 @@
-
 // empeza-negocio.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -158,9 +157,6 @@ async function guardarGiroNegocio(uid, mensaje) {
   }
   
 async function obtenerRespuestaDeGPT(mensajeUsuario) {
-    
-
-  
   if (mensajeUsuario.toLowerCase().includes("nombre") && mensajeUsuario.toLowerCase().includes("marca")) {
     return `Aquí tienes algunas ideas de nombres que podrían ir bien con una marca de cosméticos naturales, femeninos y conscientes:
 
@@ -172,7 +168,7 @@ async function obtenerRespuestaDeGPT(mensajeUsuario) {
 
 Si me das 2 o 3 palabras clave que te inspiren, puedo proponerte más nombres únicos para ti.`;
   }
-  const apiKey = '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';
+  const apiKey = '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';
   const docUsuario = currentUser ? await getDoc(doc(db, "usuarios", currentUser.uid)) : null;
   let giroInfo = '';
   if (docUsuario && docUsuario.exists()) {
@@ -180,13 +176,6 @@ Si me das 2 o 3 palabras clave que te inspiren, puedo proponerte más nombres ú
     giroInfo = `El usuario tiene un negocio de tipo: ${data.giro || 'desconocido'}, está en la etapa: ${data.etapa || 'no definida'} y su meta actual es: ${data.objetivos || 'no especificada'}.`;
   }
   const contenidoSistema = `
-  Si el usuario menciona temas como: quién te creó, quién te desarrolló, quién es tu fundador, o de qué empresa vienes:
-- Responde con naturalidad como en una conversación.
-- Usa este mensaje como base, pero redactado libremente:
-  "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
-
-Eres Alfa, un asesor empresarial experto creado por ALFA 4 Innovación...
-
 SI EL USUARIO MENCIONA QUE QUIERE CLIENTES, INVERSORES O PROVEEDORES:
 Antes de responder, verifica si hay información del giro guardado. Si la hay, puedes decir: "Según tu giro, podría ayudarte a buscar entre otros usuarios que también están registrados y que coinciden contigo en intereses, productos o servicios. ¿Te gustaría que los revise por ti?"
 
@@ -236,17 +225,16 @@ Tu prioridad es ser útil, inspirador y estratégico. Eres un verdadero copiloto
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer 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"
+      "Authorization": `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: "gpt-4", // o usa "gpt-3.5-turbo" si no tienes acceso a GPT-4
+      model: "gpt-4",
       messages: [
-        { role: "system", content: "Eres Alfa, un asesor empresarial experto..." },
+        { role: "system", content: contenidoSistema },
         { role: "user", content: mensajeUsuario }
       ]
     })
   });
-  
 
   const data = await response.json();
   return data.choices?.[0]?.message?.content || "❌ Error al obtener la respuesta.";
@@ -402,3 +390,4 @@ async function eliminarChat(index) {
   });
   mostrarHistorialChats();
 }
+ 
