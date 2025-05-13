@@ -91,22 +91,29 @@ function agregarMensaje(texto, tipo) {
 }
 
 async function obtenerResultadosDeBrave(query) {
-  const response = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5`, {
-    headers: {
-      "Accept": "application/json",
-      "X-Subscription-Token": "BSAfOZTrGWsNHR35T6D893FoK7A0Hc9"
+    try {
+      const response = await fetch(`https://alfa-4-innovaci-n-di86.vercel.app/api/brave?q=${encodeURIComponent(query)}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status}`);
+      }
+  
+      const data = await response.json();
+  
+      if (data.web && data.web.results) {
+        return data.web.results.map(r => {
+          const img = r.properties?.thumbnailUrl ? `<img src='${r.properties.thumbnailUrl}' style='max-width:100px'><br>` : "";
+          return `${img}🔗 <a href="${r.url}" target="_blank">${r.title}</a><br>${r.description}`;
+        }).join('<br><br>');
+      } else {
+        return "No se encontraron resultados.";
+      }
+    } catch (error) {
+      console.error("Error en obtenerResultadosDeBrave:", error);
+      return "❌ Hubo un error al buscar con Brave Search.";
     }
-  });
-  const data = await response.json();
-  if (data.web && data.web.results) {
-    return data.web.results.map(r => {
-      const img = r.properties?.thumbnailUrl ? `<img src='${r.properties.thumbnailUrl}' style='max-width:100px'><br>` : "";
-      return `${img}🔗 <a href="${r.url}" target="_blank">${r.title}</a><br>${r.description}`;
-    }).join('<br><br>');
-  } else {
-    return "No se encontraron resultados.";
   }
-}
+  
 function extraerTemaClave(texto) {
     const palabrasClave = ['producto', 'servicio', 'clientes', 'proveedor', 'nombre de marca', 'público objetivo', 'marketing', 'inversor'];
     const textoMin = texto.toLowerCase();
