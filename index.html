@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IA Alfa - Plataforma</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,7 +14,7 @@
 
     html, body {
       height: 100%;
-      font-family: 'Segoe UI', 'Poppins', sans-serif;
+      font-family: 'Maven Pro', sans-serif;
       background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
       background-size: 400% 400%;
       animation: fondoElegante 30s ease infinite;
@@ -135,6 +135,66 @@
       width: 100px;
       height: 100px;
     }
+
+
+    @media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .left, .right {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .left h1 {
+    font-size: 24px;
+    max-width: 100%;
+  }
+
+  .animacion-container {
+    width: 240px;
+    height: 240px;
+  }
+
+  .form-box {
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  .form-box input,
+  .form-box select {
+    font-size: 16px;
+  }
+
+  .form-box button {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .alfa-avatar {
+    position: static;
+    margin-top: 20px;
+    animation: none;
+  }
+
+  .alfa-bubble {
+    font-size: 13px;
+    max-width: 100%;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  #avatarAnimacion {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+  }
+}
+
   </style>
   <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
 </head>
@@ -251,7 +311,7 @@ function hablar(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  hablar("Hola, soy Alfa. Estoy aquí para ayudarte a crear o hacer crecer tu empresa.");
+  hablar("Soy ALFA: Tu aliada para emprender, crecer y conectar con el mundo empresarial.");
 });
 
 window.mostrarLogin = () => {
