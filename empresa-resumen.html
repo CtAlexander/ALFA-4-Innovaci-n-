@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumen de Mi Empresa - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+  <style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Maven Pro', sans-serif;
+  background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
+  background-size: 400% 400%;
+  animation: fondo 30s ease infinite;
+  color: white;
+  overflow-x: hidden;
+}
+
+@keyframes fondo {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.dato {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.dato strong {
+  display: block;
+  font-size: 15px;
+  color: #81d4fa;
+}
+
+.dato span {
+  font-size: 16px;
+}
+
+.alfa-avatar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  text-align: center;
+  animation: flotar 4s ease-in-out infinite;
+}
+
+.alfa-bubble {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 18px;
+  border-radius: 20px;
+  color: white;
+  margin-bottom: 10px;
+  max-width: 260px;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+#avatarAnimacion {
+  width: 100px;
+  height: 100px;
+}
+
+@keyframes flotar {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* 📲 Tablets */
+@media (max-width: 1024px) {
+  .container {
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .dato strong {
+    font-size: 14px;
+  }
+
+  .dato span {
+    font-size: 15px;
+  }
+
+  #avatarAnimacion {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+/* 📱 Teléfonos pequeños */
+@media (max-width: 600px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .dato {
+    padding: 12px 15px;
+  }
+
+  .dato strong {
+    font-size: 13px;
+  }
+
+  .dato span {
+    font-size: 14px;
+  }
+
+  .alfa-bubble {
+    font-size: 13px;
+    max-width: 90%;
+  }
+
+  #avatarAnimacion {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏢 Resumen de tu Empresa</h1>
+    <div id="datosEmpresa"></div>
+  </div>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble" id="mensajeAlfa">🔍 Aquí tienes el resumen de tu empresa.</div>
+    <div id="avatarAnimacion"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import lottie from "https://cdn.skypack.dev/lottie-web";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1qb1Aw2I4U-3nn3Iazrsw_RxoE2ZxvUE",
+      authDomain: "ia-alfa.firebaseapp.com",
+      projectId: "ia-alfa",
+      storageBucket: "ia-alfa.appspot.com",
+      messagingSenderId: "30859561655",
+      appId: "1:30859561655:web:714ab0eb70fd22d9f85b32",
+      measurementId: "G-5TG3F54YD7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const datosContainer = document.getElementById("datosEmpresa");
+
+    function hablar(texto) {
+      const voz = new SpeechSynthesisUtterance();
+      voz.text = texto;
+      voz.lang = "es-MX";
+      voz.pitch = 1;
+      voz.rate = 1;
+      speechSynthesis.speak(voz);
+    }
+
+    lottie.loadAnimation({
+      container: document.getElementById("avatarAnimacion"),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: "Animation - 1746668881094 (1).json"
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
+        const empresaRef = doc(db, "empresas", uid);
+        const empresaSnap = await getDoc(empresaRef);
+
+        if (empresaSnap.exists()) {
+          const data = empresaSnap.data();
+
+          const campos = {
+            "Nombre de la Empresa": data.nombreEmpresa,
+            "Tipo de Empresa": data.tipoEmpresa,
+            "Giro": data.giro,
+            "Fundador": data.fundador,
+            "Tamaño": data.tamanio,
+            "Año de Fundación": data.anioFundacion,
+            "Número de Empleados": data.empleados,
+            "Ubicación": data.ubicacion,
+            "Descripción": data.descripcion
+          };
+
+          Object.entries(campos).forEach(([key, value]) => {
+            const div = document.createElement("div");
+            div.className = "dato";
+            div.innerHTML = `<strong>${key}</strong><span>${value || "No especificado"}</span>`;
+            datosContainer.appendChild(div);
+          });
+
+          hablar(`Este es el resumen de tu empresa: ${data.nombreEmpresa}.`);
+        } else {
+          datosContainer.innerHTML = "<p>No se encontró información de tu empresa.</p>";
+          hablar("No se encontró información registrada.");
+        }
+
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
