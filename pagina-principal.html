@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pantalla Principal - IA Alfa</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
   <style>
     * {
@@ -12,7 +12,7 @@
     }
     html, body {
       height: 100%;
-      font-family: 'Orbitron', sans-serif;
+      font-family: 'Maven Pro', sans-serif;
       background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
       background-size: 400% 400%;
       animation: fondoElegante 30s ease infinite;
@@ -193,12 +193,72 @@
   }
 }
 
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .sidebar button {
+    width: 45%;
+    margin: 5px;
+    font-size: 14px;
+  }
+
+  .tarjetas {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tarjeta {
+    width: 90%;
+    text-align: center;
+  }
+
+  .post img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  #avatarAnimacion {
+    width: 80px;
+    height: 80px;
+  }
+
+  .alfa-avatar {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .alfa-bubble {
+    font-size: 12px;
+    max-width: 200px;
+  }
+
+  h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+}
 
   </style>
 </head>
 <body>
   <header>
-    <h2>Bienvenido a Alfa</h2>
+    <h2>Bienvenido a ALFA</h2>
     <div>
       <button class="perfil-btn" onclick="irAPerfil()">👤 Perfil</button>
       <button class="perfil-btn" onclick="irAAvance()">📈 Avance</button>
