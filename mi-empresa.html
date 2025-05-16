@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Empresa - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Maven Pro', sans-serif;
+  background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b, #5bc0be);
+  background-size: 400% 400%;
+  animation: fondoElegante 30s ease infinite;
+  color: white;
+  overflow-x: hidden;
+}
+
+@keyframes fondoElegante {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 30px;
+  min-height: 100vh;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.form-box {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.form-box label {
+  display: block;
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+.form-box input,
+.form-box select,
+.form-box textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 1rem;
+}
+
+.form-box button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 25px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #2c3e50, #6a89cc);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form-box button:hover {
+  background: linear-gradient(135deg, #34495e, #4a69bd);
+}
+
+.alfa-avatar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  text-align: center;
+  animation: flotar 4s ease-in-out infinite;
+}
+
+.alfa-bubble {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 18px;
+  border-radius: 20px;
+  color: white;
+  margin-bottom: 10px;
+  max-width: 260px;
+  font-size: 0.9rem;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+#avatarAnimacion {
+  width: 100px;
+  height: 100px;
+}
+
+@keyframes flotar {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* 📲 Tablets (hasta 1024px) */
+@media (max-width: 1024px) {
+  .form-box {
+    max-width: 500px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .form-box input,
+  .form-box select,
+  .form-box textarea,
+  .form-box button {
+    font-size: 0.95rem;
+  }
+
+  #avatarAnimacion {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+/* 📱 Teléfonos pequeños (hasta 480px) */
+@media (max-width: 480px) {
+  .form-box {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .form-box label {
+    font-size: 0.9rem;
+  }
+
+  .form-box input,
+  .form-box select,
+  .form-box textarea {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  .form-box button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .alfa-bubble {
+    font-size: 0.8rem;
+    max-width: 95%;
+  }
+
+  #avatarAnimacion {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏭 Información de tu Empresa</h1>
+    <div class="form-box">
+      <label>Nombre de la empresa</label>
+      <input type="text" id="nombreEmpresa" placeholder="Ej. Alfa Solutions" />
+
+      <label>Tipo de empresa</label>
+      <input type="text" id="tipoEmpresa" placeholder="Ej. S.A. de C.V., SAS, etc." />
+
+      <label>Giro</label>
+      <input type="text" id="giro" placeholder="Ej. Tecnología, Salud, Alimentos..." />
+
+      <label>Fundador</label>
+      <input type="text" id="fundador" placeholder="Nombre del fundador o fundadores" />
+
+      <label>Tamaño de la empresa</label>
+      <select id="tamanio">
+        <option value="">Selecciona</option>
+        <option>Emprendimiento</option>
+        <option>Pequeña</option>
+        <option>Mediana</option>
+        <option>Grande</option>
+      </select>
+
+      <label>Año de fundación</label>
+      <input type="number" id="anio" placeholder="Ej. 2022" />
+
+      <label>Número de empleados</label>
+      <input type="number" id="empleados" placeholder="Ej. 10" />
+
+      <label>Ubicación principal</label>
+      <input type="text" id="ubicacion" placeholder="Ciudad, País" />
+
+      <label>Descripción breve</label>
+      <textarea id="descripcion" rows="4" placeholder="Describe brevemente a qué se dedica tu empresa..."></textarea>
+
+      <button onclick="guardarEmpresa()">💾 Guardar información</button>
+    </div>
+  </div>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble" id="alfaMensaje">📋 Llena la información de tu empresa para que Alfa te ayude mejor.</div>
+    <div id="avatarAnimacion"></div>
+  </div>
+
+  <script type="module" src="mi-empresa.js"></script>
+</body>
+</html>
