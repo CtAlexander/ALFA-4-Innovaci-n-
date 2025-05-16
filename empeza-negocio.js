@@ -40,11 +40,23 @@ lottie.loadAnimation({
 onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
-      const docRef = doc(db, "usuarios", user.uid);
+      const uid = user.uid;
+  
+      // Obtener datos del usuario
+      const docRef = doc(db, "usuarios", uid);
       const snap = await getDoc(docRef);
+  
+      // Obtener datos de la empresa
+      const empresaRef = doc(db, "empresas", uid);
+      const empresaSnap = await getDoc(empresaRef);
+  
+      // Guardar datos de empresa en memoria global
+      window.datosEmpresa = empresaSnap.exists() ? empresaSnap.data() : null;
+  
+      // Procesar datos del usuario
       if (snap.exists()) {
         const userData = snap.data();
-        giroUsuario = userData.giro || null; // ✅ Recupera giro si ya estaba guardado
+        giroUsuario = userData.giro || null;
         historialChats = limpiarYFiltrarChats(userData.chats || []);
         mostrarHistorialChats();
       }
@@ -93,13 +105,9 @@ function agregarMensaje(texto, tipo) {
 async function obtenerResultadosDeBrave(query) {
     try {
       const response = await fetch(`https://alfa-4-innovaci-n-di86.vercel.app/api/brave?q=${encodeURIComponent(query)}`);
-  
-      if (!response.ok) {
-        throw new Error(`Error de red: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
   
       const data = await response.json();
-  
       if (data.web && data.web.results) {
         return data.web.results.map(r => {
           const img = r.properties?.thumbnailUrl ? `<img src='${r.properties.thumbnailUrl}' style='max-width:100px'><br>` : "";
@@ -108,11 +116,12 @@ async function obtenerResultadosDeBrave(query) {
       } else {
         return "No se encontraron resultados.";
       }
-    } catch (error) {
-      console.error("Error en obtenerResultadosDeBrave:", error);
-      return "❌ Hubo un error al buscar con Brave Search.";
+    } catch (err) {
+      console.error("Error en obtenerResultadosDeBrave:", err);
+      return "❌ No se pudo obtener resultados desde Brave Search.";
     }
   }
+  
   
 function extraerTemaClave(texto) {
     const palabrasClave = ['producto', 'servicio', 'clientes', 'proveedor', 'nombre de marca', 'público objetivo', 'marketing', 'inversor'];
@@ -156,90 +165,108 @@ async function guardarGiroNegocio(uid, mensaje) {
     );
   }
   
-async function obtenerRespuestaDeGPT(mensajeUsuario) {
-  if (mensajeUsuario.toLowerCase().includes("nombre") && mensajeUsuario.toLowerCase().includes("marca")) {
-    return `Aquí tienes algunas ideas de nombres que podrían ir bien con una marca de cosméticos naturales, femeninos y conscientes:
+  async function obtenerRespuestaDeGPT(mensajeUsuario) {
+    // Si el mensaje es sobre nombre de marca
+    if (mensajeUsuario.toLowerCase().includes("nombre") && mensajeUsuario.toLowerCase().includes("marca")) {
+      return `Aquí tienes algunas ideas de nombres que podrían ir bien con una marca de cosméticos naturales, femeninos y conscientes:
+  
+  🌿 **Alma Nativa** – transmite pureza, conexión con la tierra y bienestar.
+  🌸 **CuidArte** – combina el cuidado personal con el arte de cuidarse.
+  💧 **Raíz Clara** – suena fresco, natural y minimalista.
+  🍃 **Flor Salvaje** – ideal para una marca libre, femenina y orgánica.
+  🌞 **Luz de Luna** – suave, encantador y poético.
+  
+  Si me das 2 o 3 palabras clave que te inspiren, puedo proponerte más nombres únicos para ti.`;
+    }
+  
+   // Contexto desde Firestore
+const docUsuario = currentUser ? await getDoc(doc(db, "usuarios", currentUser.uid)) : null;
+let giroInfo = '';
 
-🌿 **Alma Nativa** – transmite pureza, conexión con la tierra y bienestar.
-🌸 **CuidArte** – combina el cuidado personal con el arte de cuidarse.
-💧 **Raíz Clara** – suena fresco, natural y minimalista.
-🍃 **Flor Salvaje** – ideal para una marca libre, femenina y orgánica.
-🌞 **Luz de Luna** – suave, encantador y poético.
-
-Si me das 2 o 3 palabras clave que te inspiren, puedo proponerte más nombres únicos para ti.`;
-  }
-  const apiKey = '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';
-  const docUsuario = currentUser ? await getDoc(doc(db, "usuarios", currentUser.uid)) : null;
-  let giroInfo = '';
-  if (docUsuario && docUsuario.exists()) {
-    const data = docUsuario.data();
-    giroInfo = `El usuario tiene un negocio de tipo: ${data.giro || 'desconocido'}, está en la etapa: ${data.etapa || 'no definida'} y su meta actual es: ${data.objetivos || 'no especificada'}.`;
-  }
-  const contenidoSistema = `
-SI EL USUARIO MENCIONA QUE QUIERE CLIENTES, INVERSORES O PROVEEDORES:
-Antes de responder, verifica si hay información del giro guardado. Si la hay, puedes decir: "Según tu giro, podría ayudarte a buscar entre otros usuarios que también están registrados y que coinciden contigo en intereses, productos o servicios. ¿Te gustaría que los revise por ti?"
-
-Luego puedes continuar con las estrategias generales si no se activa ninguna búsqueda automática.
-
-
-Eres Alfa, un asesor empresarial experto desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología creada por Julián Alexander. Tu misión es ayudar a emprendedores y empresarios a lanzar, mejorar o escalar su negocio paso a paso.
-
-${giroInfo}
-
-🔧 FUNCIONES PRINCIPALES:
-- Acompañas al usuario desde la idea hasta el crecimiento de su empresa.
-- Das ideas de negocios si el usuario no tiene una clara.
-- Haces preguntas clave para entender mejor su giro.
-- Si detectas un giro (ej: abogados, comida, tecnología), adapta tus respuestas.
-- Si te dicen "investiga" o "búscame", puedes apoyarte en Brave Search para mostrar links reales.
-- Puedes sugerir nombres de marca, nichos de clientes, estrategias de ventas y análisis de competencia.
-- Ofreces apoyo en:
-  - Planes de negocio
-  - Estudio de mercado
-  - Finanzas básicas
-  - Marketing digital
-  - Legalidad y permisos
-
-🎯 ESTILO:
-- Siempre explica paso a paso con claridad.
-- Usa un lenguaje profesional pero cercano.
-- Si el usuario está perdido, ayúdalo a enfocarse y motívalo.
-- Si pregunta quién te creó, responde: "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
-
-✨ EJEMPLOS DE TU TONO:
-- "Perfecto, antes de darte ideas necesito saber: ¿a qué público quieres llegar?"
-- "Aquí tienes una estrategia paso a paso para lanzar tu negocio en menos de 30 días."
-- "Podemos hacerlo juntos. Empecemos por entender tu producto y tu cliente ideal."
-
-Tu prioridad es ser útil, inspirador y estratégico. Eres un verdadero copiloto de negocios.`;
-
-  const lower = mensajeUsuario.toLowerCase();
-  if ((lower.includes("investiga") || lower.includes("buscar") || lower.includes("hazme")) && giroUsuario) {
-    return await obtenerResultadosDeBrave(`${mensajeUsuario} ${giroUsuario} Ciudad de México`);
-  }
-  if (lower.includes("competencia") && giroUsuario) {
-    return await obtenerResultadosDeBrave(`empresas de ${giroUsuario} en Ciudad de México`);
-  }
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4",
-      messages: [
-        { role: "system", content: contenidoSistema },
-        { role: "user", content: mensajeUsuario }
-      ]
-    })
-  });
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "❌ Error al obtener la respuesta.";
+if (docUsuario && docUsuario.exists()) {
+  const data = docUsuario.data();
+  giroInfo += `El usuario tiene un negocio con giro: ${data.giro || 'no especificado'}.\n`;
+  if (data.etapa) giroInfo += `Está en la etapa: ${data.etapa}.\n`;
+  if (data.objetivos) giroInfo += `Su meta actual es: ${data.objetivos}.\n`;
 }
 
+// Agregar información de empresa si está disponible
+if (window.datosEmpresa) {
+  const empresa = window.datosEmpresa;
+  giroInfo += `\n🧾 Datos de su empresa:\n`;
+  giroInfo += `- Nombre: ${empresa.nombreEmpresa || 'No registrado'}\n`;
+  giroInfo += `- Tipo: ${empresa.tipoEmpresa || 'No registrado'}\n`;
+  giroInfo += `- Giro: ${empresa.giro || 'No registrado'}\n`;
+  giroInfo += `- Fundador: ${empresa.fundador || 'No registrado'}\n`;
+  giroInfo += `- Tamaño: ${empresa.tamanio || 'No registrado'}\n`;
+  giroInfo += `- Año de Fundación: ${empresa.anioFundacion || 'No registrado'}\n`;
+  giroInfo += `- Empleados: ${empresa.empleados || 'No registrado'}\n`;
+  giroInfo += `- Ubicación: ${empresa.ubicacion || 'No registrada'}\n`;
+  giroInfo += `- Descripción: ${empresa.descripcion || 'No registrada'}`;
+}
+
+  
+    // Instrucciones del sistema
+    const contenidoSistema = `
+  Si el usuario menciona temas como: quién te creó, quién te desarrolló, quién es tu fundador, o de qué empresa vienes:
+  - Responde con naturalidad como en una conversación.
+  - Usa este mensaje como base, pero redactado libremente:
+    "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
+  
+  Eres Alfa, un asesor empresarial experto desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología creada por Julián Alexander. Tu misión es ayudar a emprendedores y empresarios a lanzar, mejorar o escalar su negocio paso a paso.
+  
+  ${giroInfo}
+  
+  🔧 FUNCIONES PRINCIPALES:
+  - Acompañas al usuario desde la idea hasta el crecimiento de su empresa.
+  - Das ideas de negocios si el usuario no tiene una clara.
+  - Haces preguntas clave para entender mejor su giro.
+  - Si detectas un giro (ej: abogados, comida, tecnología), adapta tus respuestas.
+  - Si te dicen "investiga" o "búscame", puedes apoyarte en Brave Search para mostrar links reales.
+  - Puedes sugerir nombres de marca, nichos de clientes, estrategias de ventas y análisis de competencia.
+  - Ofreces apoyo en:
+    - Planes de negocio
+    - Estudio de mercado
+    - Finanzas básicas
+    - Marketing digital
+    - Legalidad y permisos
+  
+  🎯 ESTILO:
+  - Siempre explica paso a paso con claridad.
+  - Usa un lenguaje profesional pero cercano.
+  - Si el usuario está perdido, ayúdalo a enfocarse y motívalo.
+  - Si pregunta quién te creó, responde: "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
+  
+  ✨ EJEMPLOS DE TU TONO:
+  - "Perfecto, antes de darte ideas necesito saber: ¿a qué público quieres llegar?"
+  - "Aquí tienes una estrategia paso a paso para lanzar tu negocio en menos de 30 días."
+  - "Podemos hacerlo juntos. Empecemos por entender tu producto y tu cliente ideal."`;
+  
+    // Búsqueda en Brave si aplica
+    const lower = mensajeUsuario.toLowerCase();
+    if ((lower.includes("investiga") || lower.includes("buscar") || lower.includes("hazme")) && giroUsuario) {
+      return await obtenerResultadosDeBrave(`${mensajeUsuario} ${giroUsuario} Ciudad de México`);
+    }
+    if (lower.includes("competencia") && giroUsuario) {
+      return await obtenerResultadosDeBrave(`empresas de ${giroUsuario} en Ciudad de México`);
+    }
+  
+    // Llamar a backend Node.js (localhost o Vercel si lo subes)
+    const response = await fetch("http://localhost:3000/api/openai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        mensaje: mensajeUsuario,
+        contexto: contenidoSistema
+      })
+    });
+  
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "❌ Error al obtener la respuesta.";
+  }
+  
 async function buscarCoincidenciasPorGiro(uid, giro) {
   const usuariosSnapshot = await getDoc(doc(db, "usuarios", uid));
   if (!usuariosSnapshot.exists()) return [];
@@ -266,12 +293,54 @@ async function guardarNombreDeMarca(uid, nombreMarca) {
   }, { merge: true });
 }
 
+function hablar(texto) {
+    const voz = new SpeechSynthesisUtterance();
+    voz.text = texto;
+    voz.lang = "es-MX";
+    voz.pitch = 1;
+    voz.rate = 1;
+    speechSynthesis.speak(voz);
+  }
+  
 async function enviarMensaje() {
     const texto = input.value.trim();
     if (!texto) return;
   
     agregarMensaje(texto, 'user');
     input.value = '';
+
+    // Si el usuario quiere ver los datos de su empresa
+if (/mi empresa|ver empresa|datos de mi empresa|mostrar empresa/i.test(texto)) {
+    if (currentUser) {
+      const empresaRef = doc(db, "empresas", currentUser.uid);
+      const empresaSnap = await getDoc(empresaRef);
+  
+      if (empresaSnap.exists()) {
+        const data = empresaSnap.data();
+        const ficha = `
+          🏢 <strong>${data.nombreEmpresa || 'Empresa sin nombre'}</strong><br>
+          🧾 Tipo: ${data.tipoEmpresa || 'No registrado'}<br>
+          🛠 Giro: ${data.giro || 'No registrado'}<br>
+          👤 Fundador: ${data.fundador || 'No registrado'}<br>
+          📏 Tamaño: ${data.tamanio || 'No registrado'}<br>
+          📅 Año de Fundación: ${data.anioFundacion || 'No registrado'}<br>
+          👥 Empleados: ${data.empleados || 'No registrado'}<br>
+          📍 Ubicación: ${data.ubicacion || 'No registrada'}<br>
+          📝 Descripción: ${data.descripcion || 'No registrada'}
+        `;
+        agregarMensaje(ficha, 'alfa');
+        hablar(`Aquí tienes la información de tu empresa registrada en el sistema: ${data.nombreEmpresa}`);
+      } else {
+        agregarMensaje("❌ No encontré información empresarial registrada para tu cuenta.", 'alfa');
+        hablar("No encontré información empresarial registrada para tu cuenta.");
+      }
+    } else {
+      agregarMensaje("❌ No estás autenticado. Por favor inicia sesión.", 'alfa');
+    }
+  
+    return; // Detiene el flujo para no seguir con la llamada a GPT
+  }
+  
   
     // 🔍 Guardar datos clave
     if (currentUser) {
@@ -390,4 +459,3 @@ async function eliminarChat(index) {
   });
   mostrarHistorialChats();
 }
- 
