@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Avance - IA Alfa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/lottie-web@latest/build/player/lottie.min.js"></script>
+  <style>
+   body {
+  margin: 0;
+  font-family: 'Maven Pro', sans-serif;
+  background: linear-gradient(135deg, #0e162e, #1c2541, #3a506b);
+  background-size: 400% 400%;
+  color: white;
+  animation: fondoElegante 30s ease infinite;
+}
+
+@keyframes fondoElegante {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.header {
+  padding: 20px;
+  text-align: center;
+  background: rgba(255,255,255,0.05);
+  font-size: 24px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.avance-contenido {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.tarjeta-avance {
+  background: rgba(255,255,255,0.05);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}
+
+canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.alfa-avatar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  text-align: center;
+  animation: flotar 4s ease-in-out infinite;
+  z-index: 999;
+}
+
+@keyframes flotar {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+.alfa-bubble {
+  background: rgba(0,0,0,0.4);
+  padding: 10px 18px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  max-width: 260px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 10px rgba(255,255,255,0.1);
+  color: white;
+  font-size: 14px;
+}
+
+/* 📲 Tablets (hasta 1024px) */
+@media (max-width: 1024px) {
+  .header {
+    font-size: 22px;
+    padding: 18px;
+  }
+
+  .avance-contenido {
+    padding: 25px;
+    gap: 30px;
+  }
+
+  .tarjeta-avance {
+    padding: 18px;
+  }
+
+  .alfa-bubble {
+    font-size: 13px;
+  }
+}
+
+/* 📱 Teléfonos pequeños (hasta 600px) */
+@media (max-width: 600px) {
+  .header {
+    font-size: 20px;
+    padding: 15px;
+  }
+
+  .avance-contenido {
+    padding: 20px 15px;
+    gap: 20px;
+  }
+
+  .tarjeta-avance {
+    padding: 16px;
+  }
+
+  .alfa-bubble {
+    font-size: 12px;
+    max-width: 90%;
+  }
+
+  #avatarAnimacion {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="header">📈 Avance de tu Empresa</div>
+  <div class="avance-contenido">
+    <div class="tarjeta-avance">
+      <h3>🚀 Evolución del Negocio</h3>
+      <canvas id="graficaEvolucion"></canvas>
+    </div>
+    <div class="tarjeta-avance">
+      <h3>🎯 Objetivos Alcanzados</h3>
+      <canvas id="graficaObjetivos"></canvas>
+    </div>
+  </div>
+
+  <div class="alfa-avatar">
+    <div class="alfa-bubble" id="mensajeAlfa">Mira todo lo que has avanzado desde que comenzaste tu emprendimiento.</div>
+    <div id="avatarAnimacion" style="width: 100px; height: 100px;"></div>
+  </div>
+
+  <script>
+    lottie.loadAnimation({
+      container: document.getElementById("avatarAnimacion"),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: "Animation - 1746668881094 (1).json"
+    });
+
+    // Alfa habla al cargar la pantalla
+window.addEventListener("DOMContentLoaded", () => {
+  const texto = "Bienvenido al panel de avance. Aquí puedes ver el crecimiento de tu empresa mes a mes.";
+  document.getElementById("mensajeAlfa").textContent = texto;
+  const voz = new SpeechSynthesisUtterance();
+  voz.text = texto;
+  voz.lang = "es-MX";
+  voz.pitch = 1;
+  voz.rate = 1;
+  speechSynthesis.speak(voz);
+});
+
+    const fechas = ["Inicio", "Mes 1", "Mes 2", "Mes 3", "Mes 4", "Hoy"];
+    const progreso = [5, 20, 40, 60, 75, 100];
+    const objetivos = [1, 2, 3, 4, 5, 6];
+
+    new Chart(document.getElementById("graficaEvolucion"), {
+      type: 'line',
+      data: {
+        labels: fechas,
+        datasets: [{ label: "Progreso (%)", data: progreso, borderColor: "#64b5f6", fill: true, backgroundColor: "rgba(100,181,246,0.2)" }]
+      },
+      options: { responsive: true }
+    });
+
+    new Chart(document.getElementById("graficaObjetivos"), {
+      type: 'bar',
+      data: {
+        labels: fechas,
+        datasets: [{ label: "Objetivos Logrados", data: objetivos, backgroundColor: "#81c784" }]
+      },
+      options: { responsive: true }
+    });
+  </script>
+</body>
+</html>
