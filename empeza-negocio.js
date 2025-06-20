@@ -1,13 +1,20 @@
-// empeza-negocio.js
+// ✅ CONFIGURACIÓN E IMPORTACIONES
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+import {
+  getDatabase,
+  ref as dbRef,
+  push as dbPush,
+  onChildChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1qb1Aw2I4U-3nn3Iazrsw_RxoE2ZxvUE",
   authDomain: "ia-alfa.firebaseapp.com",
+  databaseURL: "https://ia-alfa-default-rtdb.firebaseio.com/",
   projectId: "ia-alfa",
   storageBucket: "ia-alfa.appspot.com",
   messagingSenderId: "30859561655",
@@ -17,6 +24,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const rtdb = getDatabase(app);
 const auth = getAuth(app);
 
 const chat = document.getElementById('chat');
@@ -29,40 +37,16 @@ let giroUsuario = null;
 let currentChat = [];
 let historialChats = [];
 
+// Animación inicial del avatar principal
 lottie.loadAnimation({
   container: document.getElementById('avatarAlfa'),
   renderer: 'svg',
   loop: true,
   autoplay: true,
-  path: "Animation - 1746668881094 (1).json"
+  path: "avatar.json"
 });
 
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      const uid = user.uid;
-  
-      // Obtener datos del usuario
-      const docRef = doc(db, "usuarios", uid);
-      const snap = await getDoc(docRef);
-  
-      // Obtener datos de la empresa
-      const empresaRef = doc(db, "empresas", uid);
-      const empresaSnap = await getDoc(empresaRef);
-  
-      // Guardar datos de empresa en memoria global
-      window.datosEmpresa = empresaSnap.exists() ? empresaSnap.data() : null;
-  
-      // Procesar datos del usuario
-      if (snap.exists()) {
-        const userData = snap.data();
-        giroUsuario = userData.giro || null;
-        historialChats = limpiarYFiltrarChats(userData.chats || []);
-        mostrarHistorialChats();
-      }
-    }
-  });
-  
+// Autenticación del usuario y recuperación de datos
 
 function limpiarYFiltrarChats(chats) {
   const titulosUnicos = new Set();
@@ -92,7 +76,7 @@ function agregarMensaje(texto, tipo) {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: "Animation - 1746668881094 (1).json"
+      path: "avatar.json"
     });
   } else {
     div.textContent = texto;
@@ -102,303 +86,169 @@ function agregarMensaje(texto, tipo) {
   currentChat.push({ tipo, texto });
 }
 
-async function obtenerResultadosDeBrave(query) {
-    try {
-      const response = await fetch(`https://alfa-4-innovaci-n-di86.vercel.app/api/brave?q=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-  
-      const data = await response.json();
-      if (data.web && data.web.results) {
-        return data.web.results.map(r => {
-          const img = r.properties?.thumbnailUrl ? `<img src='${r.properties.thumbnailUrl}' style='max-width:100px'><br>` : "";
-          return `${img}🔗 <a href="${r.url}" target="_blank">${r.title}</a><br>${r.description}`;
-        }).join('<br><br>');
-      } else {
-        return "No se encontraron resultados.";
-      }
-    } catch (err) {
-      console.error("Error en obtenerResultadosDeBrave:", err);
-      return "❌ No se pudo obtener resultados desde Brave Search.";
-    }
-  }
-  
-  
-function extraerTemaClave(texto) {
-    const palabrasClave = ['producto', 'servicio', 'clientes', 'proveedor', 'nombre de marca', 'público objetivo', 'marketing', 'inversor'];
-    const textoMin = texto.toLowerCase();
-    const coincidencias = palabrasClave.filter(p => textoMin.includes(p));
-    return coincidencias.length > 0 ? coincidencias.join(', ') : 'otro';
-  }
-  
-function sugerirTagsPorGiro(giro) {
-  const sugerencias = {
-    'abogados': ['consultoría legal', 'defensa', 'asesoría jurídica'],
-    'restaurante': ['cocina', 'menú', 'clientes locales'],
-    'ropa': ['moda', 'marca de ropa', 'tienda en línea'],
-    'marketing': ['agencia digital', 'ventas online', 'SEO'],
-    'educación': ['clases online', 'escuela', 'cursos'],
-    'salud': ['consultorio', 'nutrición', 'terapias'],
-    'tecnología': ['software', 'apps', 'inteligencia artificial'],
-    'cosméticos': ['marca de maquillaje', 'productos naturales'],
-    'negocios': ['emprendimiento', 'modelos de negocio', 'finanzas']
-  };
-  const lower = giro.toLowerCase();
-  for (const [clave, tags] of Object.entries(sugerencias)) {
-    if (lower.includes(clave)) return tags;
-  }
-  return ['negocios', 'estrategia', 'ventas'];
+function hablar(texto) {
+  const voz = new SpeechSynthesisUtterance();
+  voz.text = texto;
+  voz.lang = "es-MX";
+  voz.pitch = 1;
+  voz.rate = 1;
+  speechSynthesis.speak(voz);
 }
 
-async function guardarGiroNegocio(uid, mensaje) {
-    giroUsuario = mensaje;
-    await setDoc(doc(db, "usuarios", uid), {
-      giro: mensaje,
-      tags: sugerirTagsPorGiro(mensaje)
-    }, { merge: true });
-  
-    agregarMensaje(
-      `Perfecto, para ayudarte mejor, necesito saber:\n` +
-      `1️⃣ ¿Ya tienes clientes o apenas empezarás?\n` +
-      `2️⃣ ¿Qué tipo de producto o servicio ofreces?\n` +
-      `3️⃣ ¿Qué sueñas lograr con este negocio?`,
-      'alfa'
-    );
-  }
-  
-  async function obtenerRespuestaDeGPT(mensajeUsuario) {
-    // Si el mensaje es sobre nombre de marca
-    if (mensajeUsuario.toLowerCase().includes("nombre") && mensajeUsuario.toLowerCase().includes("marca")) {
-      return `Aquí tienes algunas ideas de nombres que podrían ir bien con una marca de cosméticos naturales, femeninos y conscientes:
-  
-  🌿 **Alma Nativa** – transmite pureza, conexión con la tierra y bienestar.
-  🌸 **CuidArte** – combina el cuidado personal con el arte de cuidarse.
-  💧 **Raíz Clara** – suena fresco, natural y minimalista.
-  🍃 **Flor Salvaje** – ideal para una marca libre, femenina y orgánica.
-  🌞 **Luz de Luna** – suave, encantador y poético.
-  
-  Si me das 2 o 3 palabras clave que te inspiren, puedo proponerte más nombres únicos para ti.`;
-    }
-  
-   // Contexto desde Firestore
-const docUsuario = currentUser ? await getDoc(doc(db, "usuarios", currentUser.uid)) : null;
-let giroInfo = '';
+async function enviarMensaje() {
+  const texto = input.value.trim();
+  if (!texto || !currentUser) return;
 
-if (docUsuario && docUsuario.exists()) {
-  const data = docUsuario.data();
-  giroInfo += `El usuario tiene un negocio con giro: ${data.giro || 'no especificado'}.\n`;
-  if (data.etapa) giroInfo += `Está en la etapa: ${data.etapa}.\n`;
-  if (data.objetivos) giroInfo += `Su meta actual es: ${data.objetivos}.\n`;
-}
+  // Mostrar mensaje del usuario en pantalla
+  agregarMensaje(texto, 'user');
+  input.value = '';
 
-// Agregar información de empresa si está disponible
-if (window.datosEmpresa) {
-  const empresa = window.datosEmpresa;
-  giroInfo += `\n🧾 Datos de su empresa:\n`;
-  giroInfo += `- Nombre: ${empresa.nombreEmpresa || 'No registrado'}\n`;
-  giroInfo += `- Tipo: ${empresa.tipoEmpresa || 'No registrado'}\n`;
-  giroInfo += `- Giro: ${empresa.giro || 'No registrado'}\n`;
-  giroInfo += `- Fundador: ${empresa.fundador || 'No registrado'}\n`;
-  giroInfo += `- Tamaño: ${empresa.tamanio || 'No registrado'}\n`;
-  giroInfo += `- Año de Fundación: ${empresa.anioFundacion || 'No registrado'}\n`;
-  giroInfo += `- Empleados: ${empresa.empleados || 'No registrado'}\n`;
-  giroInfo += `- Ubicación: ${empresa.ubicacion || 'No registrada'}\n`;
-  giroInfo += `- Descripción: ${empresa.descripcion || 'No registrada'}`;
-}
-
-  
-    // Instrucciones del sistema
-    const contenidoSistema = `
-  Si el usuario menciona temas como: quién te creó, quién te desarrolló, quién es tu fundador, o de qué empresa vienes:
-  - Responde con naturalidad como en una conversación.
-  - Usa este mensaje como base, pero redactado libremente:
-    "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
-  
-  Eres Alfa, un asesor empresarial experto desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología creada por Julián Alexander. Tu misión es ayudar a emprendedores y empresarios a lanzar, mejorar o escalar su negocio paso a paso.
-  
-  ${giroInfo}
-  
-  🔧 FUNCIONES PRINCIPALES:
-  - Acompañas al usuario desde la idea hasta el crecimiento de su empresa.
-  - Das ideas de negocios si el usuario no tiene una clara.
-  - Haces preguntas clave para entender mejor su giro.
-  - Si detectas un giro (ej: abogados, comida, tecnología), adapta tus respuestas.
-  - Si te dicen "investiga" o "búscame", puedes apoyarte en Brave Search para mostrar links reales.
-  - Puedes sugerir nombres de marca, nichos de clientes, estrategias de ventas y análisis de competencia.
-  - Ofreces apoyo en:
-    - Planes de negocio
-    - Estudio de mercado
-    - Finanzas básicas
-    - Marketing digital
-    - Legalidad y permisos
-  
-  🎯 ESTILO:
-  - Siempre explica paso a paso con claridad.
-  - Usa un lenguaje profesional pero cercano.
-  - Si el usuario está perdido, ayúdalo a enfocarse y motívalo.
-  - Si pregunta quién te creó, responde: "Fui desarrollado por ALFA 4 Innovación, una empresa mexicana de tecnología fundada por Julián Alexander."
-  
-  ✨ EJEMPLOS DE TU TONO:
-  - "Perfecto, antes de darte ideas necesito saber: ¿a qué público quieres llegar?"
-  - "Aquí tienes una estrategia paso a paso para lanzar tu negocio en menos de 30 días."
-  - "Podemos hacerlo juntos. Empecemos por entender tu producto y tu cliente ideal."`;
-  
-    // Búsqueda en Brave si aplica
-    const lower = mensajeUsuario.toLowerCase();
-    if ((lower.includes("investiga") || lower.includes("buscar") || lower.includes("hazme")) && giroUsuario) {
-      return await obtenerResultadosDeBrave(`${mensajeUsuario} ${giroUsuario} Ciudad de México`);
-    }
-    if (lower.includes("competencia") && giroUsuario) {
-      return await obtenerResultadosDeBrave(`empresas de ${giroUsuario} en Ciudad de México`);
-    }
-  
-    // Llamar a backend Node.js (localhost o Vercel si lo subes)
-    const response = await fetch("http://localhost:3000/api/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mensaje: mensajeUsuario,
-        contexto: contenidoSistema
-      })
-    });
-  
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "❌ Error al obtener la respuesta.";
-  }
-  
-async function buscarCoincidenciasPorGiro(uid, giro) {
-  const usuariosSnapshot = await getDoc(doc(db, "usuarios", uid));
-  if (!usuariosSnapshot.exists()) return [];
-
-  const usuariosRef = await getDocs(collection(db, "usuarios"));
-  const coincidencias = [];
-
-  usuariosRef.forEach(docSnap => {
-    const data = docSnap.data();
-    if (
-      docSnap.id !== uid &&
-      data.giro?.toLowerCase() === giro.toLowerCase()
-    ) {
-      coincidencias.push({ nombre: data.nombre || "Usuario sin nombre", email: data.email || "Sin email" });
-    }
+  // Enviar mensaje a la RTDB en el nodo /comandos
+  const comandosRef = dbRef(rtdb, "comandos");
+  await dbPush(comandosRef, {
+    uid: currentUser.uid,
+    mensaje: texto,
+    estado: "pendiente",
+    respuesta: null,
+    timestamp: Date.now()
   });
 
-  return coincidencias;
+  // 🧠 Guardar automáticamente el texto del usuario en la colmena
+  guardarAprendizajeEnColmena("Alfa_Empresarial", "entrada_usuario", texto);
+
+  // Si el usuario dice una frase tipo "aprendiste que", la tratamos como aprendizaje manual
+  if (texto.toLowerCase().includes("aprendiste que")) {
+    const tema = "aprendizaje espontáneo";
+    const contenido = texto;
+    guardarAprendizajeEnColmena("Alfa_Empresarial", tema, contenido);
+  }
+
+  // Mostrar animación de "escribiendo"
+  const typing = document.createElement('div');
+  typing.classList.add('typing');
+  const anim = document.createElement('div');
+  anim.className = 'animation';
+  typing.appendChild(anim);
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
+  lottie.loadAnimation({
+    container: anim,
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'Animation - 1746755395319.json'
+  });
 }
 
-async function guardarNombreDeMarca(uid, nombreMarca) {
-  await setDoc(doc(db, "usuarios", uid), {
-    nombreMarca: nombreMarca
-  }, { merge: true });
+// ✅ Sincronizar aprendizajes desde la colmena
+async function sincronizarDesdeColmena() {
+  const url = `https://ia-alfa-default-rtdb.firebaseio.com/colmena.json`;
+
+  // Lista de temas prohibidos
+  const temasProhibidos = [
+    "violencia", "odio", "engaño", "armas", "manipulación", "daño", "delito",
+    "hackeo", "desinformación", "narcotráfico", "suicidio", "acoso", "autodestrucción",
+    "contaminación", "invasión de privacidad", "contenido tóxico", "ataque a personas",
+    "destrucción", "racismo", "machismo", "explotación", "estafa"
+  ];
+
+  try {
+    const respuesta = await fetch(url);
+    const datos = await respuesta.json();
+
+    if (datos) {
+      const aprendizajes = [];
+
+      for (const extension in datos) {
+        const entradas = datos[extension].aprendizajes || {};
+
+        for (const fecha in entradas) {
+          const entrada = entradas[fecha];
+          const contenido = `${entrada.tema} ${entrada.contenido}`.toLowerCase();
+
+          // Verificar que el contenido NO contenga temas prohibidos
+          const esValido = !temasProhibidos.some(palabra => contenido.includes(palabra));
+
+          if (
+            esValido &&
+            !aprendizajes.some(a => a.contenido === entrada.contenido)
+          ) {
+            aprendizajes.push(entrada);
+          }
+        }
+      }
+
+      localStorage.setItem("aprendizajes_colmena", JSON.stringify(aprendizajes));
+      console.log("🧠 Aprendizajes sincronizados desde la colmena:", aprendizajes);
+    }
+  } catch (err) {
+    console.error("🚨 Error al sincronizar aprendizajes:", err);
+  }
 }
 
-function hablar(texto) {
-    const voz = new SpeechSynthesisUtterance();
-    voz.text = texto;
-    voz.lang = "es-MX";
-    voz.pitch = 1;
-    voz.rate = 1;
-    speechSynthesis.speak(voz);
-  }
-  
-async function enviarMensaje() {
-    const texto = input.value.trim();
-    if (!texto) return;
-  
-    agregarMensaje(texto, 'user');
-    input.value = '';
+// ✅ Al iniciar sesión
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const uid = user.uid;
 
-    // Si el usuario quiere ver los datos de su empresa
-if (/mi empresa|ver empresa|datos de mi empresa|mostrar empresa/i.test(texto)) {
-    if (currentUser) {
-      const empresaRef = doc(db, "empresas", currentUser.uid);
-      const empresaSnap = await getDoc(empresaRef);
-  
-      if (empresaSnap.exists()) {
-        const data = empresaSnap.data();
-        const ficha = `
-          🏢 <strong>${data.nombreEmpresa || 'Empresa sin nombre'}</strong><br>
-          🧾 Tipo: ${data.tipoEmpresa || 'No registrado'}<br>
-          🛠 Giro: ${data.giro || 'No registrado'}<br>
-          👤 Fundador: ${data.fundador || 'No registrado'}<br>
-          📏 Tamaño: ${data.tamanio || 'No registrado'}<br>
-          📅 Año de Fundación: ${data.anioFundacion || 'No registrado'}<br>
-          👥 Empleados: ${data.empleados || 'No registrado'}<br>
-          📍 Ubicación: ${data.ubicacion || 'No registrada'}<br>
-          📝 Descripción: ${data.descripcion || 'No registrada'}
-        `;
-        agregarMensaje(ficha, 'alfa');
-        hablar(`Aquí tienes la información de tu empresa registrada en el sistema: ${data.nombreEmpresa}`);
-      } else {
-        agregarMensaje("❌ No encontré información empresarial registrada para tu cuenta.", 'alfa');
-        hablar("No encontré información empresarial registrada para tu cuenta.");
-      }
-    } else {
-      agregarMensaje("❌ No estás autenticado. Por favor inicia sesión.", 'alfa');
+    const docRef = doc(db, "usuarios", uid);
+    const snap = await getDoc(docRef);
+
+    const empresaRef = doc(db, "empresas", uid);
+    const empresaSnap = await getDoc(empresaRef);
+    window.datosEmpresa = empresaSnap.exists() ? empresaSnap.data() : null;
+
+    if (snap.exists()) {
+      const userData = snap.data();
+      giroUsuario = userData.giro || null;
+      historialChats = limpiarYFiltrarChats(userData.chats || []);
+      mostrarHistorialChats();
+      escucharRespuestas(uid);
     }
-  
-    return; // Detiene el flujo para no seguir con la llamada a GPT
+
+    // 🧠 Al iniciar sesión, sincronizar con la colmena
+    sincronizarDesdeColmena();
   }
-  
-  
-    // 🔍 Guardar datos clave
-    if (currentUser) {
-      const datos = {};
-      if (/producto|barra|snack|jugos|galletas/i.test(texto)) datos.producto = texto;
-      if (/cliente|público|audiencia|persona/i.test(texto)) datos.publicoObjetivo = texto;
-      if (/inversor|inversionista|proveedor/i.test(texto)) datos.necesitaRelacion = texto;
-      if (/marca|nombre/i.test(texto)) datos.nombreMarca = texto;
-  
-      if (Object.keys(datos).length > 0) {
-        await setDoc(doc(db, "usuarios", currentUser.uid), datos, { merge: true });
-      }
-    }
-  
-    // 🔗 Buscar coincidencias si aplica
-    if (currentUser && giroUsuario && /cliente|proveedor|inversor|inversionista/i.test(texto)) {
-      const coincidencias = await buscarCoincidenciasPorGiro(currentUser.uid, giroUsuario);
-      if (coincidencias.length > 0) {
-        const mensajeCoincidencias = coincidencias
-          .map(c => `👤 <strong>${c.nombre}</strong><br>📧 ${c.email}`)
-          .join('<br><br>');
-        agregarMensaje(`Encontré ${coincidencias.length} usuarios que podrían servirte como clientes, proveedores o aliados estratégicos:<br><br>${mensajeCoincidencias}`, 'alfa');
-      } else {
-        agregarMensaje("Busqué en mi red, pero aún no hay otros usuarios con el mismo giro. Invita a más emprendedores para hacer crecer tu red 🚀", 'alfa');
-      }
-    }
-  
-    // ⏳ Animación de "escribiendo"
-    const typing = document.createElement('div');
-    typing.classList.add('typing');
-    const anim = document.createElement('div');
-    anim.className = 'animation';
-    typing.appendChild(anim);
-    chat.appendChild(typing);
-    chat.scrollTop = chat.scrollHeight;
-  
-    lottie.loadAnimation({
-      container: anim,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'Animation - 1746755395319.json'
-    });
-  
-    // 🤖 Obtener respuesta
-    const respuesta = await obtenerRespuestaDeGPT(texto);
-    chat.removeChild(typing);
-    agregarMensaje(respuesta, 'alfa');
-  
-    // 💾 Guardar en Firestore
-    if (currentUser) {
-      await updateDoc(doc(db, "usuarios", currentUser.uid), {
-        chats: arrayUnion({ titulo: texto.slice(0, 30), mensajes: [...currentChat] }),
-        temas: arrayUnion(extraerTemaClave(texto))
-      });
+});
+
+// ✅ Sincronización automática cada 10 minutos
+setInterval(sincronizarDesdeColmena, 10 * 60 * 1000);
+
+// Ejemplo: sugerencias basadas en aprendizajes sincronizados
+function sugerirDesdeAprendizaje() {
+  const aprendizajes = JSON.parse(localStorage.getItem("aprendizajes_colmena") || "[]");
+
+  if (aprendizajes.length > 0) {
+    const sugerencias = aprendizajes
+      .filter(a => a.tema !== "entrada_usuario")
+      .slice(-3) // las 3 más recientes
+      .map(a => `¿Quieres saber más sobre: <strong>${a.tema}</strong>?`);
+
+    if (sugerencias.length) {
+      sugerencias.forEach(s => agregarMensaje(s, "alfa"));
     }
   }
-  
+}
+
+function escucharRespuestas(uid) {
+  const comandosRef = dbRef(rtdb, "comandos");
+
+  onChildChanged(comandosRef, (snapshot) => {
+    const data = snapshot.val();
+    const key = snapshot.key;
+
+    if (data.uid === uid && data.estado === "respondido" && data.respuesta) {
+      // Eliminar animación de carga
+      const typingDiv = document.querySelector(".typing");
+      if (typingDiv) typingDiv.remove();
+
+      agregarMensaje(data.respuesta, "alfa");
+      hablar(data.respuesta);
+    }
+  });
+}
 
 input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") {
@@ -415,6 +265,42 @@ chat.addEventListener("scroll", () => {
   const nearBottom = chat.scrollTop + chat.clientHeight >= chat.scrollHeight - 200;
   goToBottomBtn.style.display = nearBottom ? "none" : "block";
 });
+
+
+// ✅ Esta función va FUERA de enviarMensaje()
+async function guardarAprendizajeEnColmena(extension, tema, contenido) {
+  const fecha = new Date().toISOString().replace(/[:.]/g, "-");
+
+  const aprendizaje = {
+    extension: extension,
+    tema: tema,
+    contenido: contenido,
+    fecha: fecha
+  };
+
+  const url = `https://ia-alfa-default-rtdb.firebaseio.com/colmena/${extension}/aprendizajes/${fecha}.json`;
+
+  try {
+    const respuesta = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(aprendizaje)
+    });
+
+    if (respuesta.ok) {
+      console.log("✅ Aprendizaje enviado a la colmena.");
+      agregarMensaje(`Listo, ya he guardado este aprendizaje bajo el tema <strong>${tema}</strong>. Gracias por compartirlo 🧠.`, "alfa");
+      hablar(`Listo, ya he guardado este aprendizaje bajo el tema ${tema}. Gracias por compartirlo.`);
+    } else {
+      console.error("❌ Error al guardar en la colmena:", await respuesta.text());
+    }
+  } catch (err) {
+    console.error("🚨 Error al conectar con Firebase:", err);
+  }
+}
+
 
 function crearNuevoChat() {
   currentChat = [];
@@ -459,3 +345,5 @@ async function eliminarChat(index) {
   });
   mostrarHistorialChats();
 }
+
+
